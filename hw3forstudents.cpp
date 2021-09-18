@@ -2,7 +2,7 @@
 #include <chrono>
 #include <iostream>
 #include <unistd.h>
-
+//#include <sched.h> for cpu set mabye??
 #include <vector>
 
 #include <thread>
@@ -31,12 +31,12 @@ you can enable the pin function to fix the binding of threads to cores.
 //     cpu_set_t cpuset;
 //     CPU_ZERO(&cpuset);
 //     CPU_SET(core_id, &cpuset);
-
+//
 //     pthread_t current_thread = pthread_self();
 //     pthread_setaffinity_np(current_thread, sizeof(cpu_set_t), &cpuset);
 // }
 
-void read_only_same_pos(int i, int *ptr) {
+void read_only_same_pos(int i, int *ptr) { // will sum the value in *ptr 100 mill times??
     // pin(i);
     int acc = 0;
     for(auto spin = 0; spin < NUM_TIMES_SPIN; ++spin) {
@@ -44,7 +44,7 @@ void read_only_same_pos(int i, int *ptr) {
     }
 }
 
-void read_and_write_same_pos(int i, int *ptr) {
+void read_and_write_same_pos(int i, int *ptr) {//reads and writes to ptr mem location 100 mill times
     // pin(i);
     int acc = 0;
     for(auto spin = 0; spin < NUM_TIMES_SPIN; ++spin) {
@@ -54,7 +54,7 @@ void read_and_write_same_pos(int i, int *ptr) {
         else {
             acc -= *ptr;
         }
-        *ptr = rand();
+        *ptr = rand();// this is where we write a random number
     }
 }
 
@@ -76,28 +76,38 @@ void coherency_tests() {
     int max_threads = 4;
     vector<thread> workers;
     for(auto num_threads = 1; num_threads <= max_threads; ++num_threads) {
-        // test 1:
+        //iterates up from 1 to 4 threads, so when num_threads is 3 for example there will be 3 threads doing
+        //the function called in that test
+
+        // test 1: This will call read only same pos
         int *test1 = new int[1];
         test1[0] = 3;
         auto start = high_resolution_clock::now();
 
         for(auto i = 0; i < num_threads; ++i) {
             workers.push_back(thread(&read_only_same_pos, i, test1));
+            //above line will add the thread which is working on the function "read only same pos", this function
+            // takes the arguments i and test1, this calls the function to run as well.
+
+            //if num_threads is 3 here will will have 3 separate threads trying to run the read_only_same_pos func.
+
         }
 
         for(auto i = 0; i < num_threads; ++i) {
-            workers[i].join();
+            workers[i].join();//waits for that thread to finish execution
         }
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(stop - start).count();
-        cout << "Test 1 " << num_threads << " threads " << duration << endl;
+        auto duration_seconds = duration/1000000.00
+        cout << "Test 1 " << num_threads << " threads " <<
+        "microseconds: " << duration << "seconds: "<< duration_seconds << endl;
         delete[] test1;
         workers.clear();
 
-        // test 2:
-        int *test2 = new int[max_threads];
+        // test 2: This will call read and write same pos
+        int *test2 = new int[max_threads];//test2 is now a pointer to an int array on the heap of size 4
         for(auto i = 0; i < num_threads; ++i){
-            test2[i] = 2;
+            test2[i] = 2;//fills array with 2's
         }
         start = high_resolution_clock::now();
         for(auto i = 0; i < num_threads; ++i) {
@@ -108,11 +118,12 @@ void coherency_tests() {
         }
         stop = high_resolution_clock::now();
         duration = duration_cast<microseconds>(stop - start).count();
-        cout << "Test 2 " << num_threads << " threads " << duration << endl;
+        cout << "Test 2 " << num_threads << " threads " <<
+             "microseconds: " << duration << "seconds: "<< duration_seconds << endl;
         delete[] test2;
         workers.clear();
 
-        // test 3:
+        // test 3: This calls read and write same cache
         int *test3 = new int[max_threads];
         for(auto i = 0; i < num_threads; ++i){
             test3[i] = 2;
@@ -126,7 +137,8 @@ void coherency_tests() {
         }
         stop = high_resolution_clock::now();
         duration = duration_cast<microseconds>(stop - start).count();
-        cout << "Test 3 " << num_threads << " threads " << duration << endl;
+        cout << "Test 3 " << num_threads << " threads " <<
+             "microseconds: " << duration << "seconds: "<< duration_seconds << endl;
         delete[] test3;
         workers.clear();
     }
