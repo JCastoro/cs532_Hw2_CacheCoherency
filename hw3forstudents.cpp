@@ -76,7 +76,7 @@ void coherency_tests() {
     int max_threads = 4;
     vector<thread> workers;
     for(auto num_threads = 1; num_threads <= max_threads; ++num_threads) {
-        // test 1: 
+        // test 1:
         int *test1 = new int[1];
         test1[0] = 3;
         auto start = high_resolution_clock::now();
@@ -94,10 +94,10 @@ void coherency_tests() {
         delete[] test1;
         workers.clear();
 
-        // test 2: 
+        // test 2:
         int *test2 = new int[max_threads];
         for(auto i = 0; i < num_threads; ++i){
-            test2[i] = 2; 
+            test2[i] = 2;
         }
         start = high_resolution_clock::now();
         for(auto i = 0; i < num_threads; ++i) {
@@ -112,10 +112,11 @@ void coherency_tests() {
         delete[] test2;
         workers.clear();
 
-        // test 3: 
-        int *test3 = new int[2];
-        test3[0] = 1;
-        test3[1] = 2;
+        // test 3:
+        int *test3 = new int[max_threads];
+        for(auto i = 0; i < num_threads; ++i){
+            test3[i] = 2;
+        }
         start = high_resolution_clock::now();
         for(auto i = 0; i < num_threads; ++i) {
             workers.push_back(thread(&read_and_write_same_cache, i, test3));
