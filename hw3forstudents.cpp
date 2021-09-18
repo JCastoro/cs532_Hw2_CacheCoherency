@@ -98,7 +98,7 @@ void coherency_tests() {
         }
         auto stop = high_resolution_clock::now();
         auto duration = duration_cast<microseconds>(stop - start).count();
-        auto duration_seconds = duration/1000000.00
+        auto duration_seconds = duration/1000000.00;
         cout << "Test 1 " << num_threads << " threads " <<
         "microseconds: " << duration << "seconds: "<< duration_seconds << endl;
         delete[] test1;
@@ -118,6 +118,7 @@ void coherency_tests() {
         }
         stop = high_resolution_clock::now();
         duration = duration_cast<microseconds>(stop - start).count();
+	duration_seconds = duration/1000000.00;
         cout << "Test 2 " << num_threads << " threads " <<
              "microseconds: " << duration << "seconds: "<< duration_seconds << endl;
         delete[] test2;
@@ -137,7 +138,8 @@ void coherency_tests() {
         }
         stop = high_resolution_clock::now();
         duration = duration_cast<microseconds>(stop - start).count();
-        cout << "Test 3 " << num_threads << " threads " <<
+        duration_seconds = duration/1000000.00;
+	cout << "Test 3 " << num_threads << " threads " <<
              "microseconds: " << duration << "seconds: "<< duration_seconds << endl;
         delete[] test3;
         workers.clear();
@@ -149,3 +151,5 @@ int main(int argc, char **argv) {
     coherency_tests();
     return 1;
 }
+
+
